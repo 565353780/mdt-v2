@@ -12,8 +12,13 @@ from masked_diffusion.script_util import (
     add_dict_to_argparser,
 )
 from masked_diffusion.train_util import TrainLoop
-from masked_diffusion import create_diffusion, model_and_diffusion_defaults, diffusion_defaults
+from masked_diffusion import (
+    create_diffusion,
+    model_and_diffusion_defaults,
+    diffusion_defaults,
+)
 import masked_diffusion.models as models_mdt
+
 
 def main():
     args = create_argparser().parse_args()
@@ -25,13 +30,17 @@ def main():
     configs = args_to_dict(args, model_and_diffusion_defaults().keys())
     print(configs)
     print(args)
-    image_size = configs['image_size']
+    image_size = configs["image_size"]
     latent_size = image_size // 8
-    model = models_mdt.__dict__[args.model](input_size=latent_size, mask_ratio=args.mask_ratio, decode_layer=args.decode_layer)
+    model = models_mdt.__dict__[args.model](
+        input_size=latent_size,
+        mask_ratio=args.mask_ratio,
+        decode_layer=args.decode_layer,
+    )
     print(model)
     diffusion = create_diffusion(**args_to_dict(args, diffusion_defaults().keys()))
     model.to(dist_util.dev())
-    
+
     schedule_sampler = create_named_schedule_sampler(args.schedule_sampler, diffusion)
 
     logger.log("creating data loader...")
@@ -83,13 +92,15 @@ def create_argparser():
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
-    parser.add_argument('--world_size', default=1, type=int,
-                        help='number of distributed processes')
-    parser.add_argument('--local_rank', default=-1, type=int)
-    parser.add_argument('--local-rank', default=-1, type=int)
-    parser.add_argument('--dist_on_itp', action='store_true')
-    parser.add_argument('--dist_url', default='env://',
-                        help='url used to set up distributed training')
+    parser.add_argument(
+        "--world_size", default=1, type=int, help="number of distributed processes"
+    )
+    parser.add_argument("--local_rank", default=-1, type=int)
+    parser.add_argument("--local-rank", default=-1, type=int)
+    parser.add_argument("--dist_on_itp", action="store_true")
+    parser.add_argument(
+        "--dist_url", default="env://", help="url used to set up distributed training"
+    )
     parser.add_argument(
         "--rank", default=0, type=int, help="""rank for distrbuted training."""
     )
